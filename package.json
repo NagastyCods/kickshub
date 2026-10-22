@@ -1,0 +1,47 @@
+{
+  "name": "kickshub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KicksHub — sneaker ecommerce for customers in Ghana (GHS)",
+  "main": "server/server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "seed": "node server/seed/seed.js",
+    "test": "node --test server/test/*.test.js"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "server"
+    ],
+    "ext": "js,json"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.8.0",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.5.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1",
+    "morgan": "^1.10.1",
+    "multer": "^2.4.0",
+    "nodemailer": "^10.1.7",
+    "pdfkit": "^0.17.2",
+    "xss": "^1.0.15"
+  },
+  "devDependencies": {
+    "nodemon": "^1.14.10"
+  }
+}

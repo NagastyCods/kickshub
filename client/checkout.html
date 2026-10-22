@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout | KicksHub</title>
+  <meta name="description" content="Delivery across Ghana. Pay with card, Mobile Money, or on delivery.">
+  <meta property="og:title" content="Checkout | KicksHub">
+  <meta property="og:description" content="Delivery across Ghana. Pay with card, Mobile Money, or on delivery.">
+  <meta property="og:type" content="website">
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('kickshub_theme');
+        if (theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (err) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="logo" href="/">KICKS<span>HUB</span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+    <nav id="primary-nav" class="primary-nav" aria-label="Primary">
+      <a href="/shop">Shop</a>
+      <a href="/shop?gender=men">Men</a>
+      <a href="/shop?gender=women">Women</a>
+      <a href="/shop?new=true">New</a>
+      <a href="/shop?collection=classics">Classics</a>
+    </nav>
+    <div class="header-tools">
+      <button class="icon-btn" type="button" data-open-search>Search</button>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle color theme">Theme</button>
+      <a class="icon-btn" href="/wishlist">Saved</a>
+      <a class="icon-btn" href="/login" data-account-link>Account</a>
+      <a class="icon-btn cart-link" href="/cart">Bag <span data-cart-count>0</span></a>
+    </div>
+  </header>
+  <main id="main">
+    <h1>Checkout</h1>
+    <div class="checkout">
+      <form data-checkout>
+        <div data-guest class="panel">
+          <h2>Contact</h2>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+        </div>
+        <div class="panel">
+          <h2>Delivery</h2>
+          <label>Full name<input name="fullName" required autocomplete="name"></label>
+          <label>Phone<input name="phone" required autocomplete="tel" placeholder="0240000000"></label>
+          <label>Region<select name="region" required></select></label>
+          <label>City<input name="city" list="cities" required autocomplete="address-level2"></label>
+          <datalist id="cities"></datalist>
+          <label>GhanaPost GPS<input name="digitalAddress" placeholder="GA-184-1234"></label>
+          <label>Street<input name="street" required autocomplete="street-address"></label>
+          <label>Landmark<input name="landmark"></label>
+          <label>Speed
+            <select name="deliveryMethod">
+              <option value="standard">Standard</option>
+              <option value="express">Express</option>
+            </select>
+          </label>
+          <label>Note for the rider<textarea name="customerNote"></textarea></label>
+        </div>
+        <div class="panel">
+          <h2>Payment</h2>
+          <div data-payments></div>
+          <div data-momo hidden>
+            <label>Network<select name="mobileNetwork" data-networks></select></label>
+            <label>Mobile Money number<input name="mobileNumber" placeholder="0551234987"></label>
+          </div>
+          <label>Promo code<input name="promoCode" autocomplete="off"></label>
+          <button class="btn-ghost" type="button" data-apply-promo>Apply code</button>
+        </div>
+        <button class="btn accent" type="submit">Place order</button>
+      </form>
+      <aside class="summary" data-summary></aside>
+    </div>
+    <section class="panel" data-momo-status hidden>
+      <h2>Approve on your phone</h2>
+      <p data-momo-text></p>
+      <form data-otp hidden>
+        <label>OTP<input name="otp" inputmode="numeric" required></label>
+        <button class="btn" type="submit">Submit code</button>
+      </form>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div>
+      <p class="logo">KICKS<span>HUB</span></p>
+      <p>Sneakers delivered across Ghana. Prices in cedis.</p>
+    </div>
+    <form class="newsletter" data-newsletter>
+      <label for="news-email">Newsletter</label>
+      <div>
+        <input id="news-email" name="email" type="email" required placeholder="you@email.com" autocomplete="email">
+        <button class="btn" type="submit">Join</button>
+      </div>
+    </form>
+    <nav aria-label="Help">
+      <a href="/shipping">Shipping and returns</a>
+      <a href="/faq">FAQ</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </footer>
+  <div class="toasts" aria-live="polite"></div>
+  <dialog class="search-dialog" data-search-dialog>
+    <form method="dialog"><button class="dialog-close" type="submit" value="cancel" aria-label="Close"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></form>
+    <label>Search sneakers
+      <input data-search-input type="search" placeholder="Air Force, Samba, Jordan">
+    </label>
+    <ul data-search-results></ul>
+  </dialog>
+  <script type="module" src="/js/checkout.js"></script>
+</body>
+</html>

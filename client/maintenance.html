@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KicksHub is updating</title>
+  <meta name="robots" content="noindex">
+  <meta name="description" content="KicksHub is briefly closed while we update the shop.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('kickshub_theme');
+        if (theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (err) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="logo" href="/">KICKS<span>HUB</span></a>
+  </header>
+  <main id="main" class="section">
+    <h1>The shop is briefly closed.</h1>
+    <p>We are updating KicksHub. Card, Mobile Money, and delivery orders will reopen shortly. If you already paid, your order is safe.</p>
+    <p><a class="btn" href="/login?next=/admin">Staff login</a></p>
+  </main>
+</body>
+</html>
