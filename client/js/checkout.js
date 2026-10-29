@@ -1,7 +1,7 @@
 import { api } from './api.js';
 import { currentUser } from './auth.js';
 import { clearLocalCart, fetchCart } from './cart.js';
-import { ghs, loadStore, showErrors, toast, withButton } from './ui.js';
+import { escapeHtml, ghs, loadStore, showErrors, toast, withButton } from './ui.js';
 
 const form = document.querySelector('[data-checkout]');
 const summary = document.querySelector('[data-summary]');
@@ -86,11 +86,15 @@ if (!cart.items.length) {
       const payload = await api.post('/api/checkout/quote', body());
       const quote = payload.data;
       summary.innerHTML = `<h2>Order summary</h2>
-        ${quote.items.map((item) => `<p>${item.quantity} × ${item.name} <span>EU ${item.size}</span> <strong>${ghs(item.lineTotal)}</strong></p>`).join('')}
-        <p>Subtotal <strong>${ghs(quote.subtotal)}</strong></p>
-        <p>Discount <strong>− ${ghs(quote.discount)}</strong></p>
-        <p>Delivery (${quote.delivery.estimate}) <strong>${ghs(quote.deliveryFee)}</strong></p>
-        <p>Total <strong>${ghs(quote.total)}</strong></p>`;
+        <ul class="summary-lines">
+          ${quote.items.map((item) => `<li><span>${item.quantity} × ${escapeHtml(item.name)} <small>EU ${escapeHtml(item.size)}</small></span><strong>${ghs(item.lineTotal)}</strong></li>`).join('')}
+        </ul>
+        <dl class="totals">
+          <div><dt>Subtotal</dt><dd>${ghs(quote.subtotal)}</dd></div>
+          <div><dt>Discount</dt><dd>− ${ghs(quote.discount)}</dd></div>
+          <div><dt>Delivery <small>(${escapeHtml(quote.delivery.estimate)})</small></dt><dd>${ghs(quote.deliveryFee)}</dd></div>
+          <div class="grand"><dt>Total</dt><dd>${ghs(quote.total)}</dd></div>
+        </dl>`;
     } catch (error) {
       summary.innerHTML = `<p class="field-error">${error.message}</p>`;
     }

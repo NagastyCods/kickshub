@@ -17,6 +17,29 @@ function imageFor(product, variant) {
 }
 
 /**
+ * Checkout charges variant.price. The admin listing price is basePrice.
+ * When every size still shares one price, that price follows the listing price.
+ * When sizes differ, only sizes still on the previous listing price move.
+ * A size with its own price stays as it is.
+ */
+function applyCatalogPrice(product, nextPrice) {
+  const next = roundMoney(nextPrice);
+  if (!Number.isFinite(next) || next < 1) throw new ApiError(400, 'Price must be at least 1');
+  const previous = roundMoney(product.basePrice);
+  const variants = product.variants || [];
+  const current = [...variants].map((variant) => roundMoney(variant.price));
+  const sharedPrice = new Set(current).size === 1;
+  const listingChanged = next !== previous;
+  variants.forEach((variant) => {
+    const price = roundMoney(variant.price);
+    if (sharedPrice) variant.price = next;
+    else if (listingChanged && price === previous) variant.price = next;
+  });
+  product.basePrice = next;
+  return product;
+}
+
+/**
  * Prices always come from the product document. Callers must not pass a price.
  */
 async function priceLines(lines) {
@@ -124,4 +147,4 @@ async function quoteOrder({ lines, region, deliveryMethod = 'standard', promoCod
   };
 }
 
-module.exports = { priceLines, quoteOrder };
+module.exports = { priceLines, quoteOrder, applyCatalogPrice };

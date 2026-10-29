@@ -6,6 +6,7 @@ const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendSuccess } = require('../utils/apiResponse');
 const { roundMoney } = require('../utils/money');
+const { applyCatalogPrice } = require('../services/pricing');
 const slugify = require('../utils/slugify');
 const { lookupSize } = require('../config/sizes');
 const { storeImage } = require('../services/uploads');
@@ -175,12 +176,28 @@ const updateProduct = asyncHandler(async (req, res) => {
   ['name', 'description', 'gender', 'featured', 'isNewArrival', 'isActive', 'seoTitle', 'seoDescription'].forEach((field) => {
     if (req.body[field] !== undefined) product[field] = req.body[field];
   });
-  if (req.body.basePrice !== undefined) product.basePrice = req.body.basePrice;
+  if (req.body.basePrice !== undefined) applyCatalogPrice(product, req.body.basePrice);
+  if (Array.isArray(req.body.variants)) {
+    req.body.variants.forEach((row) => {
+      const variant = product.variants.id(row.id);
+      if (!variant) throw new ApiError(404, 'Variant not found');
+      if (row.price !== undefined) {
+        const price = roundMoney(row.price);
+        if (price < 1) throw new ApiError(400, 'Price must be at least 1');
+        variant.price = price;
+      }
+    });
+  }
   if (req.body.compareAtPrice === '' || req.body.compareAtPrice === null) product.compareAtPrice = null;
   else if (req.body.compareAtPrice !== undefined) product.compareAtPrice = req.body.compareAtPrice;
   if (Array.isArray(req.body.tags)) product.tags = req.body.tags;
   if (Array.isArray(req.body.images)) product.images = cleanImages(req.body.images);
   await product.save();
+  if (Array.isArray(req.body.variants)) {
+    for (const row of req.body.variants) {
+      if (row.stock !== undefined) await Product.setVariantStock(product._id, row.id, Number(row.stock));
+    }
+  }
   const fresh = await Product.findById(product._id).populate('brand', 'name').populate('collectionId', 'name');
   sendSuccess(res, { product: adminProduct(fresh, { detail: true }) }, 'Product saved');
 });

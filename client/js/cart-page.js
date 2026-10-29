@@ -17,10 +17,12 @@ async function render() {
         <p class="muted">EU ${item.size} · ${item.color}</p>
         <p class="price">${ghs(item.lineTotal)}</p>
         ${item.warning ? `<p class="field-error">${item.warning}</p>` : ''}
-        <div class="qty">
-          <button type="button" data-dec="${item.variantId}" aria-label="Decrease quantity">−</button>
-          <span>${item.quantity}</span>
-          <button type="button" data-inc="${item.variantId}" aria-label="Increase quantity">+</button>
+        <div class="line-actions">
+          <div class="qty">
+            <button type="button" data-dec="${item.variantId}" aria-label="Decrease quantity"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+            <span>${item.quantity}</span>
+            <button type="button" data-inc="${item.variantId}" aria-label="Increase quantity"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          </div>
           <button type="button" class="btn-ghost" data-remove="${item.variantId}">Remove</button>
         </div>
       </div>

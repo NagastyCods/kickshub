@@ -67,11 +67,39 @@ async function load() {
   }
 }
 
+const filtersToggle = document.querySelector('[data-filters-toggle]');
+const narrowShop = window.matchMedia('(max-width: 899px)');
+
+function syncFilters() {
+  const narrow = narrowShop.matches;
+  filtersToggle.hidden = !narrow;
+  if (!narrow) {
+    form.hidden = false;
+    return;
+  }
+  if (!form.dataset.open) form.hidden = true;
+  filtersToggle.setAttribute('aria-expanded', form.hidden ? 'false' : 'true');
+  filtersToggle.textContent = form.hidden ? 'Filters' : 'Hide filters';
+}
+
+filtersToggle.addEventListener('click', () => {
+  form.hidden = !form.hidden;
+  if (form.hidden) delete form.dataset.open;
+  else form.dataset.open = '1';
+  syncFilters();
+});
+narrowShop.addEventListener('change', syncFilters);
+
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   const params = paramsFromForm();
   params.delete('page');
   history.pushState({}, '', `/shop?${params.toString()}`);
+  if (narrowShop.matches) {
+    form.hidden = true;
+    delete form.dataset.open;
+    syncFilters();
+  }
   load();
 });
 form.addEventListener('reset', () => {
@@ -87,4 +115,10 @@ form.querySelector('[name="brand"]').innerHTML = `<option value="">All brands</o
 form.querySelector('[name="collection"]').innerHTML = `<option value="">All collections</option>${collections.data.map((collection) => `<option value="${escapeHtml(collection.slug)}">${escapeHtml(collection.name)}</option>`).join('')}`;
 const colors = ['Black', 'White', 'Grey', 'Navy', 'Red', 'Blue', 'Green', 'Pink', 'Orange', 'Cream'];
 form.querySelector('[name="color"]').innerHTML = `<option value="">Any color</option>${colors.map((color) => `<option>${color}</option>`).join('')}`;
+if (narrowShop.matches) {
+  const params = new URLSearchParams(location.search);
+  params.delete('page');
+  if ([...params.keys()].length) form.dataset.open = '1';
+}
+syncFilters();
 load();

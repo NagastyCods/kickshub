@@ -57,7 +57,7 @@ function render() {
         </button>`).join('')}</div>
       <p class="muted">UK ${escapeHtml(variant.sizeUK)} · US men ${escapeHtml(variant.sizeUSMen)} · US women ${escapeHtml(variant.sizeUSWomen)}</p>
       <div class="buy-row">
-        <div class="qty"><button type="button" data-qty="-1" aria-label="Decrease quantity">−</button><span data-qty-value>1</span><button type="button" data-qty="1" aria-label="Increase quantity">+</button></div>
+        <div class="qty"><button type="button" data-qty="-1" aria-label="Decrease quantity"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><span data-qty-value>1</span><button type="button" data-qty="1" aria-label="Increase quantity"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
         <button class="btn accent" type="button" data-add ${variant.available <= 0 ? 'disabled' : ''}>Add to bag</button>
         <button class="btn-ghost" type="button" data-save>Save</button>
       </div>

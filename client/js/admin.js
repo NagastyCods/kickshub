@@ -56,14 +56,14 @@ function renderHome(data) {
 
 function orderTable(orders) {
   if (!orders.length) return '<p class="muted">No orders yet.</p>';
-  return `<table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead><tbody>
+  return `<div class="table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th></tr></thead><tbody>
     ${orders.map((order) => `<tr>
       <td><a href="/admin/orders/${escapeHtml(order.orderNumber)}" data-nav>${escapeHtml(order.orderNumber)}</a></td>
       <td>${escapeHtml(order.customerName)}<br><span class="muted">${escapeHtml(order.customerEmail)}</span></td>
       <td>${escapeHtml(order.orderStatus)} · ${escapeHtml(order.paymentStatus)}${order.needsRefundReview ? '<br><strong>Refund review</strong>' : ''}</td>
       <td>${ghs(order.total)}</td>
     </tr>`).join('')}
-  </tbody></table>`;
+  </tbody></table></div>`;
 }
 
 async function renderOrders() {
@@ -198,13 +198,13 @@ async function renderOrder(orderNumber) {
 
 function productTable(products) {
   if (!products.length) return '<p class="muted">No products.</p>';
-  return `<table class="admin-table"><thead><tr><th>Shoe</th><th>Price</th><th>Status</th></tr></thead><tbody>
+  return `<div class="table-wrap"><table class="admin-table"><thead><tr><th>Shoe</th><th>Price</th><th>Status</th></tr></thead><tbody>
     ${products.map((product) => `<tr>
       <td><a href="/admin/products/${product.id}" data-nav>${escapeHtml(product.name)}</a><br><span class="muted">${escapeHtml(product.brandName)} · ${escapeHtml(product.sku)}</span></td>
       <td>${ghs(product.basePrice)}</td>
       <td>${product.isActive ? 'On sale' : 'Hidden'}${product.inStock ? '' : ' · sold out'}</td>
     </tr>`).join('')}
-  </tbody></table>`;
+  </tbody></table></div>`;
 }
 
 async function renderProducts() {
@@ -249,7 +249,9 @@ async function renderProductForm(id) {
       <label>Collection<select name="collectionId" required>${collectionOptions(collections.data, existing && existing.collectionId)}</select></label>
       <label>Gender<select name="gender">${['men', 'women', 'unisex', 'kids'].map((gender) => `<option ${existing && existing.gender === gender ? 'selected' : ''}>${gender}</option>`).join('')}</select></label>
       <label>Description<textarea name="description" required>${escapeHtml(existing ? existing.description : '')}</textarea></label>
-      <label>Price (GHS)<input name="basePrice" type="number" min="1" step="0.01" required value="${existing ? existing.basePrice : ''}"></label>
+      <label>Price (GHS)<input name="basePrice" type="number" min="1" step="0.01" required value="${existing ? existing.basePrice : ''}" data-loaded="${existing ? existing.basePrice : ''}"></label>
+      <p class="muted">Checkout charges each size. Saving applies this price to sizes that still use the previous one.</p>
+      ${existing ? '<button class="btn-ghost" type="button" data-apply-price>Use this price for every size</button>' : ''}
       <label>Compare-at price<input name="compareAtPrice" type="number" min="0" step="0.01" value="${existing && existing.compareAtPrice ? existing.compareAtPrice : ''}"></label>
       <label>Image URL<input name="image" required value="${escapeHtml(existing && existing.images[0] ? existing.images[0].url : '')}"></label>
       <label>Upload<input name="file" type="file" accept="image/jpeg,image/png,image/webp"></label>
@@ -263,8 +265,8 @@ async function renderProductForm(id) {
       <button class="btn accent" type="submit">${existing ? 'Save shoe' : 'Create shoe'}</button>
     </form>
     ${existing ? `<section class="section"><h2>Sizes in stock</h2>
-      <table class="admin-table"><thead><tr><th>SKU</th><th>Size</th><th>Color</th><th>On hand</th><th>Reserved</th><th>For sale</th><th>Price</th><th></th></tr></thead><tbody>
-        ${existing.variants.map((variant) => `<tr data-variant="${variant.id}">
+      <div class="table-wrap"><table class="admin-table"><thead><tr><th>SKU</th><th>Size</th><th>Color</th><th>On hand</th><th>Reserved</th><th>For sale</th><th>Price</th><th></th></tr></thead><tbody>
+        ${existing.variants.map((variant) => `<tr data-variant="${variant.id}" data-stock="${variant.stock}">
           <td>${escapeHtml(variant.sku)}</td>
           <td>EU ${escapeHtml(variant.size)}</td>
           <td>${escapeHtml(variant.color)}</td>
@@ -274,7 +276,7 @@ async function renderProductForm(id) {
           <td><input name="price" type="number" min="1" step="0.01" value="${variant.price}"></td>
           <td><button class="btn" type="button" data-save-variant>Save</button></td>
         </tr>`).join('')}
-      </tbody></table>
+      </tbody></table></div>
       <form class="panel" data-add-variant>
         <h2>Add a size</h2>
         <label>EU size<select name="size">${SIZES.map((size) => `<option>${size}</option>`).join('')}</select></label>
@@ -287,6 +289,35 @@ async function renderProductForm(id) {
     </section>` : ''}`;
 
   const form = app.querySelector('[data-product]');
+  function cents(value) {
+    return Math.round(Number(value) * 100);
+  }
+  function alignSizePrices() {
+    const baseInput = form.querySelector('[name="basePrice"]');
+    const next = Number(baseInput.value);
+    const loaded = Number(baseInput.dataset.loaded);
+    const inputs = [...app.querySelectorAll('[data-variant] [name="price"]')];
+    if (!inputs.length || !Number.isFinite(next)) return;
+    const unique = new Set(inputs.map((input) => cents(input.value)));
+    const loadedCents = cents(loaded);
+    const nextCents = cents(next);
+    inputs.forEach((input) => {
+      if (input.dataset.dirty === '1') return;
+      const current = cents(input.value);
+      if (current === loadedCents || (unique.size === 1 && current !== nextCents)) input.value = String(next);
+    });
+  }
+  app.querySelectorAll('[data-variant] [name="price"]').forEach((input) => {
+    input.addEventListener('input', () => { input.dataset.dirty = '1'; });
+  });
+  app.querySelector('[data-apply-price]')?.addEventListener('click', () => {
+    const next = form.querySelector('[name="basePrice"]').value;
+    app.querySelectorAll('[data-variant] [name="price"]').forEach((input) => {
+      input.value = next;
+      input.dataset.dirty = '1';
+    });
+    toast('Every size now uses this price. Save the shoe to publish it.');
+  });
   form.querySelector('[name="file"]').addEventListener('change', async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -331,6 +362,16 @@ async function renderProductForm(id) {
         history.pushState({}, '', `/admin/products/${result.data.product.id}`);
         route();
       } else {
+        alignSizePrices();
+        body.variants = [...app.querySelectorAll('[data-variant]')].map((row) => {
+          const entry = {
+            id: row.dataset.variant,
+            price: Number(row.querySelector('[name="price"]').value),
+          };
+          const stock = Number(row.querySelector('[name="stock"]').value);
+          if (stock !== Number(row.dataset.stock)) entry.stock = stock;
+          return entry;
+        });
         await api.patch(`/api/admin/products/${existing.id}`, body);
         toast('Product saved');
         renderProductForm(existing.id);
@@ -519,13 +560,13 @@ async function renderCustomers() {
     api.get('/api/admin/stock-alerts'),
   ]);
   app.innerHTML = `<h1>Customers</h1>
-    <table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th></th></tr></thead><tbody>
+    <div class="table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th></th></tr></thead><tbody>
       ${customers.data.map((user) => `<tr>
         <td>${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</td>
         <td>${escapeHtml(user.email)}<br><span class="muted">${escapeHtml(user.phone)}</span></td>
         <td><button class="btn-ghost" type="button" data-user="${user.id}" data-active="${user.isActive ? 'false' : 'true'}">${user.isActive ? 'Disable' : 'Enable'}</button></td>
       </tr>`).join('')}
-    </tbody></table>
+    </tbody></table></div>
     <section class="section"><h2>Newsletter</h2>
       ${newsletter.data.map((row) => `<p>${escapeHtml(row.email)} <span class="muted">${escapeHtml(row.source)}</span></p>`).join('') || '<p class="muted">No subscribers.</p>'}
     </section>

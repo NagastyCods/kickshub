@@ -2,6 +2,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('crypto');
 const { toPesewas, fromPesewas, formatGhs } = require('../utils/money');
+const { applyCatalogPrice } = require('../services/pricing');
 const { normalizeGhanaPhone, guessNetwork, paystackProviderFor } = require('../utils/phone');
 const slugify = require('../utils/slugify');
 const escapeHtml = require('../utils/escapeHtml');
@@ -15,6 +16,28 @@ describe('money', () => {
     assert.equal(toPesewas(10.555), 1056);
     assert.equal(fromPesewas(1050), 10.5);
     assert.equal(formatGhs(12), '₵12.00');
+  });
+});
+
+describe('catalog price', () => {
+  it('updates sizes that still use the listing price', () => {
+    const product = { basePrice: 890, variants: [{ price: 890 }, { price: 890 }, { price: 1200 }] };
+    applyCatalogPrice(product, 750);
+    assert.equal(product.basePrice, 750);
+    assert.deepEqual(product.variants.map((variant) => variant.price), [750, 750, 1200]);
+  });
+
+  it('repairs sizes that still share one old price', () => {
+    const product = { basePrice: 399.94, variants: [{ price: 860 }, { price: 860 }] };
+    applyCatalogPrice(product, 409.94);
+    assert.equal(product.basePrice, 409.94);
+    assert.deepEqual(product.variants.map((variant) => variant.price), [409.94, 409.94]);
+  });
+
+  it('leaves a custom size price in place', () => {
+    const product = { basePrice: 750, variants: [{ price: 890 }, { price: 1200 }] };
+    applyCatalogPrice(product, 750);
+    assert.deepEqual(product.variants.map((variant) => variant.price), [890, 1200]);
   });
 });
 
