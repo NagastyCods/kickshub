@@ -101,8 +101,12 @@ addresses.innerHTML = user.addresses.map(addressForm).join('') + addressForm();
 addresses.querySelectorAll('form').forEach(bindAddress);
 
 const orderPayload = await api.get('/api/orders');
+orders.className = 'order-list';
 orders.innerHTML = orderPayload.data.map((order) => `
-  <a class="panel" href="/order/${order.orderNumber}">
-    <strong>${order.orderNumber}</strong>
-    <span>${order.orderStatus} · ${ghs(order.total)}</span>
+  <a class="panel order-card" href="/order/${encodeURIComponent(order.orderNumber)}">
+    <span class="order-number">${escapeHtml(order.orderNumber)}</span>
+    <span class="order-meta">
+      <span class="order-status">${escapeHtml(String(order.orderStatus || '').replaceAll('_', ' '))}</span>
+      <strong>${ghs(order.total)}</strong>
+    </span>
   </a>`).join('') || '<p class="muted">No orders yet.</p>';
